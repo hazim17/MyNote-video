@@ -1,5 +1,5 @@
 
--> Create Repository on github
+1. Create Repository on github
 => Go to github.com
 => log in / sign up if you haven't had an account
 => Click button 'new'
@@ -11,14 +11,14 @@
 
 ---------
 
--> create repository on vscode
+2. create repository on vscode
 => go to vs code
 => create 2 folders: client & server
 
 
 ----------
 
--> initialize these folders:
+3. initialize these folders:
 - MERN-stack-Gerard-Taylor
 - client
 - server
@@ -27,7 +27,7 @@
 
 ----------
 
--> connect your vs code repo to your github
+4. connect your vs code repo to your github
 => on git bash, on your MERN-stack-Gerard-Taylor path, type: 
 git init
 => type: git remote add origin https://github.com/hazim17/MyNote-video.git

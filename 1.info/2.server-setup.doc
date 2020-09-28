@@ -1,0 +1,56 @@
+
+1. create feature branch: 
+=> on your git bash, on folder server, type: git chekout -b tutorial-part-2
+
+----------------------------------------------------
+
+2. Create Express server
+=> on your git bash, on server folder, on tutorial-part-2 branch, type: npm install express
+
+
+----------------------------------------------------
+
+3. create server.js
+=> in your server folder, create server.js
+
+
+----------------------------------------------------
+
+4. Use express on server.js
+=> on server.js
+const express = require('express');
+consr app = express();
+const API_PORT = process.env.PORT || 8080;
+
+app.use(express.json()); //this is allow us to parse json
+
+app.get("/:name", (req, res) => {
+    res.send(`Hello, ${req.params.name}`); //it'll return Hello, whatever-name-you-type-in-/:name
+})
+
+app.listen(API_PORT, () => console.log(`Listening on Port ${API_PORT}'))
+
+----------------------------------------------------
+
+5. Try to run server.js
+=> on your git bash, on server folder. on tutorial-part-2 branch, type: node server.js
+
+
+
+----------------------------------------------------
+
+6. To test the server
+=> Run server.js (like above)
+=> Go to postman / open postman
+=> Click '+' symbol to open new window
+=> choose 'GET'
+=> Type on request url, 
+if you type: localhost:8080/Danniell
+=> the respons: Hello, Danniell
+
+----------------------------------------------------
+
+=> In this server setup part, we created the skeleton for our Express web server and we've also tested that server by creating a dummy get route in postman
+=> This is will be the building block for our application
+
+----------------------------------------------------
