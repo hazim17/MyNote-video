@@ -1,0 +1,41 @@
+
+-> Create Repository on github
+=> Go to github.com
+=> log in / sign up if you haven't had an account
+=> Click button 'new'
+=> For Repository name, in this case: MyNote-video
+=> Description: Repository for MyNote Video Tutorial
+=> pick public / private if you want
+=> click 'creating repository' button
+
+
+---------
+
+-> create repository on vscode
+=> go to vs code
+=> create 2 folders: client & server
+
+
+----------
+
+-> initialize these folders:
+- MERN-stack-Gerard-Taylor
+- client
+- server
+
+=> in git bash, go to each of those folder, type: npm init
+
+----------
+
+-> connect your vs code repo to your github
+=> on git bash, on your MERN-stack-Gerard-Taylor path, type: 
+git init
+=> type: git remote add origin https://github.com/hazim17/MyNote-video.git
+=> type: git status; to see the status
+=> type: git add .; To add every changes you did
+=> type: git commit -m "initial commit"
+=> type: git push -u origin master
+
+
+
+
