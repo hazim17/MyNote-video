@@ -1,0 +1,210 @@
+
+{{ ADVICE: DO NOT COPY PASTE CODE, YOU HAVE TO WRITE IT, BECAUSE IT PROBABBLY WON'T EXECUTED / SOMETHING WON'T 'CLICK' WHN YOU JUST COPY AND PASTE CODE}}
+
+1. Mongodb setup
+=> go to mongodb.com
+=> sign in with your email address / google account: muhammadhazimmuaafii@gmail.com
+=> Create a new cluster
+=> Add a connection ip address
+    => Go to Network Access
+    => click: 'Add an IP adress'
+    => choose: 'Allow Access from anywhere'
+    => click 'confirm'
+    => it'll give you ip adress: 0.0.0.0/0 
+    => this isn't really secure, but because this project is personal, that's fine. And it's easier for testing
+    => if your project gonna be open project/ gonna be product,try to use sepsific ip adress, like your computer ip adress or else
+=> Create a database user
+    => Go to Database Access
+    => Click 'Add New Database User'
+    => user: mern-app-comment-videos
+    => password: CzvQDQLUpo2E9FXx
+    => click 'add user'
+    => you created a new different user database for every different project
+=> connect database
+    => Go to clusters
+    => click 'connect' button
+    => Choose 'connect your application"
+    => in this case, the driver is: node js (you can pick another one, depend technology you're using )
+    => version: you can leave it that way
+    => copy the link, in this case: mongodb+srv://mern-app-comment-videos:<password>@cluster0.dt6l0.mongodb.net/<dbname>?retryWrites=true&w=majority
+    => fill the password, dbname:
+    mongodb+srv://mern-app-comment-videos:CzvQDQLUpo2E9FXx@cluster0.dt6l0.mongodb.net/you_note?retryWrites=true&w=majority
+
+
+--------------------------------------------------------
+
+2. create new branch and folder
+=> Go back to vs code
+=> create new branch, tutorial-part-3
+    => on git bash, go to server folder, type: git checkout -b tutorial-part-3
+=> install mongoose
+    => on git bash, on server folder, on tutorial-part-3 branch, type: npm install mongoose
+=> create a new folder on server folder: create models folder
+    => inside that folder, create: user.js
+
+
+
+---------------------------------------------------------
+
+3. code in user.js
+=> In user.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const UserSchema = new Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    passwordHash: {
+        type: String,
+        required: true,
+    }, 
+    numNotes: {
+        type: Number
+    }
+})
+
+
+module.exports = User = mongoose.model("User", UserSchema)
+
+
+
+
+---------------------------------------------------------
+
+4. create a new file
+=> create a new file inside models folder on server folder
+    => inside models folder, create: note.js
+
+
+
+---------------------------------------------------------
+
+
+5. code in note.js
+=> in note.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const NoteSchema = new Schema({
+    title: String,
+    body: Object,
+    author: String,
+    videoLink: String,
+    videoTimestamp: Number,
+    date: {
+        type: Date, default: Date.now
+    }
+}, {
+    timestamps: true
+});
+
+module.exports = Note = mongoose.model('Note', NoteSchema);
+
+
+
+---------------------------------------------------------
+
+6. connect your server to mongodb
+
+=> go to server.js on server folder
+
+=> on server.js
+const express = require('express');
+/* Add this (1) */
+const mongoose = require('mongoose');
+const note = require('./models/note');
+/**/
+const app = express();
+
+app.use(express.json())
+
+/* Delete this
+app.get("/:name", (req, res) => {
+    res.send(`Hello, ${req.params.name}`)
+})
+*/
+
+/* Add this (1) */
+const dbPath = 'mongodb+srv://mern-app-comment-videos:CzvQDQLUpo2E9FXx@cluster0.dt6l0.mongodb.net/you_note?retryWrites=true&w=majority'; //paste in path/link from mongo db
+
+mongoose.connect(dbPath, {
+    dbName: 'you_note',
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log("connected to the DB")
+}).catch((err) => console.log("Error connecting to the database"))
+
+app.post("/", (req, res) => {
+    const{title, author, body} = req.body;
+
+    let newNote = new note({ //this is note.js
+        title,
+        author,
+        body
+    })
+
+    newNote
+        .save()
+        .then((note) => {
+            console.log("NOTE SAVED");
+            res.json(note);
+        }).catch(err => {
+            console.log("error saving the note.")
+            res.send("ERROR.");
+        })
+})
+/**/
+
+app.listen(API_PORT, () => console.log(`Listening on port ${API_PORT}`))
+
+
+---------------
+
+=> mongoose.connect is asynchronous, app.listen will start up, then if is it's connected to DB it'll return "connected to the DB" or if there's an error it'll return "Error connecting to the database"
+
+
+
+
+
+---------------------------------------------------------
+
+7. run the server
+=> on git basj, on server folder, on tutorial-part-3 branch type: node server.js
+
+
+---------------------------------------------------------
+
+8. Test out our post route
+=> open postman
+=> in 'Tutorial from Youtube' collection
+=> in localhost:8080
+=> change to 'POST' method
+=> type url: localhost:8080
+=> go to 'body'
+=> choose 'raw'
+=> choose 'JSON'
+=> in the body:
+    {
+        "ttile": "My First Note",
+        "author": "Dan",
+        "Body": {
+            "text": "Body Text"
+        }
+    }
+=> click 'Send" button
+=> Respond in Body:
+{
+    "_id": "5f73f5eade57d90da0b3e76b",
+    "title": "My First Note",
+    "author": "Dan",
+    "date": "2020-09-30T03:05:14.898Z",
+    "createdAt": "2020-09-30T03:05:14.902Z",
+    "updatedAt": "2020-09-30T03:05:14.902Z",
+    "__v": 0
+}
+
