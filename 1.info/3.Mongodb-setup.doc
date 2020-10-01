@@ -113,21 +113,13 @@ module.exports = Note = mongoose.model('Note', NoteSchema);
 
 => on server.js
 const express = require('express');
-/* Add this (1) */
 const mongoose = require('mongoose');
 const note = require('./models/note');
-/**/
 const app = express();
 
 app.use(express.json())
 
-/* Delete this
-app.get("/:name", (req, res) => {
-    res.send(`Hello, ${req.params.name}`)
-})
-*/
 
-/* Add this (1) */
 const dbPath = 'mongodb+srv://mern-app-comment-videos:CzvQDQLUpo2E9FXx@cluster0.dt6l0.mongodb.net/you_note?retryWrites=true&w=majority'; //paste in path/link from mongo db
 
 mongoose.connect(dbPath, {
@@ -158,9 +150,10 @@ app.post("/", (req, res) => {
             res.send("ERROR.");
         })
 })
-/**/
 
 app.listen(API_PORT, () => console.log(`Listening on port ${API_PORT}`))
+
+
 
 
 ---------------

@@ -1,0 +1,67 @@
+
+
+0. Branch
+=> for brnaching, i don't need to create feature branch, because i only make it for my self (I use master branch)
+=> but if in the future you want to use future branch that's okay
+
+
+-------------------------------------------------------------
+
+
+1. install jsonwebtoken & bcryptjs
+=> on your git bash, in MERN-stack-Gerard-Taylor, in master branch, type: 
+- npm install jsonwebtoken
+- npm install bcryptjs
+
+
+--------------------------------------------------------------
+
+2. create a folder and file
+=> on server folder, create routes folder
+=> inside routes folder, create:
+- notes.js
+- auth.js
+
+=> auth.js will take care of: handling logging in user, signing up user, signing in user
+
+
+--------------------------------------------------------------
+
+3. Go to auth.js
+
+=> on auth.js
+
+
+--------------------------------------------------------------
+
+4. Go to server.js
+
+=> on server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const note = require('./models/note');
+const app = express();
+
+app.use(express.json())
+
+
+const dbPath = 'mongodb+srv://mern-app-comment-videos:CzvQDQLUpo2E9FXx@cluster0.dt6l0.mongodb.net/you_note?retryWrites=true&w=majority'; //paste in path/link from mongo db
+
+mongoose.connect(dbPath, {
+    dbName: 'you_note',
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log("connected to the DB")
+}).catch((err) => console.log("Error connecting to the database"))
+
+
+
+app.listen(API_PORT, () => console.log(`Listening on port ${API_PORT}`))
+
+
+
+
+
+
