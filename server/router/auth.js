@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken'); //how we authenticate user without needing 
 const User = require('../models/user');
 
 
+//first route
 router.post('/', async (req, res) => {
 
     const { username, password } = req.body; // the body is going to have fields or parameter or values with where key is named username and also password (so these have to match whatever is inside of the body)
@@ -26,8 +27,48 @@ router.post('/', async (req, res) => {
         .save()
         .then(user => {
             jwt.sign({
-                username: newUser.username
-            }); //this is how we return an auth token / create auth token to return to client
+                username: newUser.username //this is how we return an auth token / create auth token to return to client
+            }, 'secret', (err, token) => {
+                if(err) throw err;
+                res.send({
+                    token,
+                    user: {
+                        username: user.username
+                    }
+                })
+            }); 
+        }).catch(err => {
+            console.log(err)
+            res.status(500).json({msg: `User ${err.keyValue['username']} already exists. Try Loggin In.`})
         })
+})
 
-})//8:47 / 28:29
+
+//second route
+router.post("/logic", (req, res) => {
+    const { username, password } = req.body
+    User.findOne({username})
+        .then(user => {
+            if(!user) {
+                res.status(500).json({msg:"No User with that username: " + username})
+                return;
+            } else if(!bcrypt.compareSync(password, user.passwordHash)) {
+                res.status(500).json({msg: "Invalid Password"})
+            }
+
+            jwt.sign({
+                username: newUser.username //this is how we return an auth token / create auth token to return to client
+            }, 'secret', (err, token) => {
+                if(err) throw err;
+                res.send({
+                    token,
+                    user: {
+                        username: user.username
+                    }
+                })
+            }); 
+        }).catch(err => {
+            console.log(err);
+            res.status(500).send(err);
+        })
+})

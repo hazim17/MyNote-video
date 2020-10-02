@@ -27,20 +27,217 @@
 
 --------------------------------------------------------------
 
-3. Go to auth.js
+3. Go to auth.js, inside router folder
 
 => on auth.js
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs'); //hash users password
+const jwt = require('jsonwebtoken'); //how we authenticate user without needing them to log back in
+
+
+const User = require('../models/user');
+
+
+//first route
+router.post('/', async (req, res) => {
+
+    const { username, password } = req.body; // the body is going to have fields or parameter or values with where key is named username and also password (so these have to match whatever is inside of the body)
+
+    if(password.length < 6) {
+        res.status(500).json({msg: "Password length must be greater than 6 character"})
+        return;
+    }
+
+    let newUser = new User({
+        username,
+        passwordHash: bcrypt.hashSync(password, 10), //this line is how we avoid storing actual password in database; so this will make the password unique, and human can read easily. You can pass in not just '10', but whatever you want either number or string.
+        numNotes: 0
+    }) 
+
+    newUser
+        .save()
+        .then(user => {
+            jwt.sign({
+                username: newUser.username //this is how we return an auth token / create auth token to return to client
+            }, 'secret', (err, token) => {
+                if(err) throw err;
+                res.send({
+                    token,
+                    user: {
+                        username: user.username
+                    }
+                })
+            }); 
+        }).catch(err => {
+            console.log(err)
+            res.status(500).json({msg: `User ${err.keyValue['username']} already exists. Try Loggin In.`})
+        })
+})
+
+
+//second route
+router.post("/logic", (req, res) => {
+    const { username, password } = req.body
+    User.findOne({username})
+        .then(user => {
+            if(!user) {
+                res.status(500).json({msg:"No User with that username: " + username})
+                return;
+            } else if(!bcrypt.compareSync(password, user.passwordHash)) {
+                res.status(500).json({msg: "Invalid Password"})
+            }
+
+            jwt.sign({
+                username: newUser.username //this is how we return an auth token / create auth token to return to client
+            }, 'secret', (err, token) => {
+                if(err) throw err;
+                res.send({
+                    token,
+                    user: {
+                        username: user.username
+                    }
+                })
+            }); 
+        }).catch(err => {
+            console.log(err);
+            res.status(500).send(err);
+        })
+})
+
+
 
 
 --------------------------------------------------------------
 
-4. Go to server.js
+4. Go to notes.js, inside router folder
+
+=> on notes.js
+const express = require('express')
+const router = express.Router()
+
+const Note = require('../models/note')
+const User = require('../models/user')
+
+const saveNote = (note, res) => {
+    note    
+        .save()
+        .then(note => res.json(note))
+        .catch(() => res.status(400).json({msg: "Error: Could not save the note."}))
+}
+
+
+router.get("/", (req, res) => {
+    Note.find({author: req.username.username}) //finad all the note with that username
+        .then(notes => {
+            res.json(notes)
+        }).catch(err => res.json({msg: "Could Not find notes for that user"}))
+})
+
+
+router.post("/", (req, res) => {
+    const { title, body, videoLink, videoTimestamp } = req.body
+    let note = new Note({
+        title,
+        body: JSON.parse(body),
+        author: req.username.username,
+        videoLink,
+        videoTimestamp
+    });
+
+    saveNote(note, res);
+})
+
+
+router.put("/:id", (req, res) => {
+    const { title, body, videoLink, videoTimestamp } = req.body
+    Note.findById(req.params.id)
+        .then(note => {
+            note.title = title,
+            note.body = JSON.parse(body);
+            note.videoLink = videoLink,
+            note.videoTimestamp = videoTimestamp
+            saveNote(note, res)
+        }).catch(() => res,json({msg: "No note found with that ID"}))
+
+    saveNote(note, res);
+})
+
+
+router.delete("/:id", (req, res) => {
+    Note
+        .findByIdAndDelete(req.params.id)
+        .then(() => res.json({msg: "Message Deleted."}))
+        .catch(() => res.json({msg: "Could not find note to delete."}))
+})
+
+
+--------------------------------------------------------------
+
+5. create a folder and file
+=> on server folder, create middleware folder
+=> inside middleware folder, create:
+- auth.js
+
+
+
+6. Go to auth.js (inside middleware folder)
+=> on the auth.js
+const jwt = require('jsonwebtoken')
+
+const auth = (req, res, next) => {
+    let publicURLS = [
+        {url: '/api/auth/', method: 'POST'}
+    ]
+
+    let isPublic = false;
+
+    for(var i = 0; i < publicURLS.length; i++) {
+        const {url, method} = publicURLS[i];
+        if(req.url.includes(url) && req.method === method) {
+            isPublic = true
+            break
+        }
+    } 
+
+    if(isPublic) {
+        next()
+        return
+    }
+
+    const token = req.header('x-auth-token');
+    if(!token) {
+        res.status(401).json({ msg: "Invalid token. Access Denied"})
+        return
+    }
+
+    try {
+        const decoded = jwt.verify(JSON.parse(token), 'secret'); //this has to match on auth.js in router folder
+        req.username = decoded;
+        next();
+    } catch(exception) {
+        res.status(400).json({msg: "Token is not valid."})
+    }
+}
+
+module.exports = auth;
+
+
+
+
+
+--------------------------------------------------------------
+
+7. Go to server.js
 
 => on server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const note = require('./models/note');
+const auth = require('./middleware/auth');
 const app = express();
+
+const API_PORT = process.env.port || 8080
 
 app.use(express.json())
 
@@ -53,10 +250,14 @@ mongoose.connect(dbPath, {
     useCreateIndex: true,
     useUnifiedTopology: true
 }).then(() => {
-    console.log("connected to the DB")
+    console.log("connected to the DB.")
 }).catch((err) => console.log("Error connecting to the database"))
 
 
+app.all('/api/*', auth)
+
+app.use('/api/notes', require('./routes/notes'));
+app.use('/api/auth', require('./routes/auth'));
 
 app.listen(API_PORT, () => console.log(`Listening on port ${API_PORT}`))
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const note = require('./models/note');
+const auth = require('./middleware/auth');
 const app = express();
 
 const API_PORT = process.env.port || 8080
@@ -20,6 +21,9 @@ mongoose.connect(dbPath, {
 }).catch((err) => console.log("Error connecting to the database"))
 
 
+app.all('/api/*', auth)
 
+app.use('/api/notes', require('./routes/notes'));
+app.use('/api/auth', require('./routes/auth'));
 
 app.listen(API_PORT, () => console.log(`Listening on port ${API_PORT}`))
